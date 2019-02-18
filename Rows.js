@@ -148,33 +148,12 @@ RowBase.prototype.toMappedArray = function (destinationArray) {
 //   Logger.log("StrsArray Size NumRows:NumColumns : " + strsArray.length + ":" + strsArray[0].length);
 // };
 
-/**
- * Add the RowBase to the given sheet
- * @param {Sheet} sheet - the sheet to add the row to
- */
-// RowBase.prototype.AddToSheet = function(sheet){
-//     sheet.appendRow(this.columnValues);
-//     var range = sheet.getRange((sheet.getLastRow()), 1, 1, this.columnItems.length);
-//     //logRange(range, this.formatStrings);
-//     range.setNumberFormats(this.formatStrings);
-// }
-
-/**
- *  Initialize given range to the values of the column values
- *  and set the cell formatting for the range
- * @param {Range} range - the range to set to the column values
- */
-// RowBase.prototype.initRange = function(range){
-//     if(this.updateRange(range)){
-//         range.setNumberFormats(this.formatStrings);
-//     }
-// };
-
-
+//---------------------- PerformerRow -----------------------------------------
 
 PerformerRow.prototype = new RowBase();
 PerformerRow.prototype.constructor = PerformerRow;
 PerformerRow.prototype.columnItems = [
+  { name: "ACT_TYPE"              , header: "" , mapIndex:    0, format: "#"}
   { name: "ACT_NAME"              , header: "" , mapIndex:    1, format: "@"},
   { name: "NUMBER_IN_ACT"         , header: "" , mapIndex:    2, format: "@"},
   { name: "FIRST_NAME"            , header: "" , mapIndex:    3, format: "@"},
@@ -254,6 +233,7 @@ PerformerRow.prototype.columnItems = [
       this.arriveTime = date.getTimeString();
     }
   });
+
   Object.defineProperty(this, 'flightDepartDate', {
     enumerable: true,
     get: function() {

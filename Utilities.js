@@ -131,8 +131,6 @@ function ArrayContains(array, value){
 }
 
 
-
-
 function StringStartsWith(source, startsWith){
   var ret = true;
   var i = 0;
@@ -145,16 +143,19 @@ function StringStartsWith(source, startsWith){
 }
 
 
-function testStartsWith(){
-  var str = "Shuttle performers between theaters and/or lodging, pick-up equipment or other items, etc.  Plan to spend this shift at Hale's Palladium on call to drive.";
-  var passStart = "Shuttle"
-  var failStart = "Pickup"
-   var passed = StringStartsWith(str, passStart);
-   if(passed){
-     Logger.log("The pass passed");
-     }
-  passed = StringStartsWith(str, failStart);
-  if(!passed){
-    Logger.log("The fail passed");
-  }
+function Sub15Minutes(time){
+  return new Date(time.getTime() - 900000);
+}
+
+function Sub150Minutes(time){
+  return new Date(time.getTime() - 9000000);
+}
+
+function Add90Minutes(time){
+  return new Date(time.getTime() + 5400000);
+}
+
+var coeff = 1000 * 60 * 5;
+function RoundTo5Minutes(time){
+	return new Date(Math.round(time.getTime() / coeff) * coeff)
 }

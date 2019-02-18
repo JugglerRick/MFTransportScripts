@@ -15,7 +15,7 @@ function SheetBase(spreadSheetProperty, sheetNameProperty) {
     var spreadSheetID = scriptProperties.getProperty(spreadSheetProperty);
     var sheetName = scriptProperties.getProperty(sheetNameProperty);
     if(undefined === spreadSheet || null === spreadSheet){
-      spreadSheet = SpreadsheetApp.openById(cabaretSpreadSheetID);
+      spreadSheet = SpreadsheetApp.openById(spreadSheetID);
     }
     this.sheet = spreadSheet.getSheetByName(sheetName);
 
@@ -49,7 +49,6 @@ SheetBase.prototype.refreshRows = function () {
     row.fromArray(rowArray);
     this.rows.push(row);
   });
-
 };
 
 /**
@@ -165,4 +164,37 @@ PerformerSheet.prototype.Row = PerformerRow;
 PerformerSheet.prototype.numColumns = PerformerRow.prototype.columnItems.length;
 function PerformerSheet(){
   SheetBase("PERFORMER_SHEET_ID", "ACTS");
+}
+
+PerformerSheet.prototype.refreshRows = function () {
+  this.numRows = this.sheet.getDataRange().getLastRow() + 1 - this.startingRow;
+  var fullRange = this.sheet.getRange(startingRow, 1, this.numRows, this.numColumns);
+  var rawArrays = fullRange.getValues();
+  this.rows = new Array();
+  rawArrays.forEach(function(rowArray){
+    var row = new this.Row();
+    row.fromArray(rowArray);
+    if(row.numberInAct && row.numberInAct !== ""){
+      this.rows.push(row);
+    }
+  });
+};
+
+
+PerformerSheet.prototype.findPerformerByName = function(name) {
+  var performer = null;
+  var NameRow = new PerformerRow();
+  var nameParts = name.split(" ");
+  NameRow.firstName = nameParts[0];
+  NameRow.lastName = nameParts[1];
+  for(var i = 0 ; i < this.rows.length && null === performer ; ++i){
+    if(this.rows[i].matchesTemplateRow(NameRow)) {
+      performer = this.rows[i];
+    }
+  }
+  if(null === performer) {
+    Logger.log("findPerformer was unable to locate " + name);
+  }
+  return performer;
+
 }

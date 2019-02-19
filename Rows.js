@@ -296,16 +296,29 @@ function PerformerRow(){
 
 
 PerformerRow.prototype.isArrivalShiftEntered = function(){
-  return  this.columnValues[this.ARRIVAL_SHIFT_ENTERED].trim() === "Yes";
+  var ret = false;
+  var shiftEntered = this.columnValues[this.ARRIVAL_SHIFT_ENTERED];
+  if(null != shiftEntered){
+    shiftEntered = shiftEntered.trim().toUpperCase();
+    ret = shiftEntered === "YES";
+  }
+  return  ret;
 };
 
 PerformerRow.prototype.arrivalShiftEntered = function(isShiftEntered) {
+
   this.columnValues[this.ARRIVAL_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
 };
 
 
 PerformerRow.prototype.isDepartureShiftEntered = function(){
-  return  this.columnValues[this.DEPART_SHIFT_ENTERED].trim() === "Yes";
+  var ret = false;
+  var shiftEntered = this.columnValues[this.DEPART_SHIFT_ENTERED];
+  if(null != shiftEntered){
+    shiftEntered = shiftEntered.trim().toUpperCase();
+    ret = shiftEntered === "YES";
+  }
+  return  ret;
 };
 
 PerformerRow.prototype.departureShiftEntered = function(isShiftEntered) {
@@ -314,16 +327,28 @@ PerformerRow.prototype.departureShiftEntered = function(isShiftEntered) {
 
 // needsPickUp
 PerformerRow.prototype.needsPickUp = function() {
-  var pickup = this.columnValues[this.NEEDS_PICKUP].trim();
-  var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-  return pickup.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+  var ret = false;
+  var needPickup = this.columnValues[this.NEEDS_PICKUP];
+  var needRides = this.columnValues[this.NEEDS_RIDES];
+  if(null != needPickup && null != needRides){
+    needPickup = needPickup.trim().toUpperCase();
+    needRides = needRides.trim().toUpperCase();
+    ret = needPickup === "NEEDS" || ride === "NEEDS";
+  }
+  return ret;
 };
 
   // needsDropOff
 PerformerRow.prototype.needsDropOff = function() {
-  var dropOff = this.columnValues[this.NEEDS_DROPOFF].trim();
-  var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-  return dropOff.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+  var ret = false;
+  var needDropOff = this.columnValues[this.NEEDS_DROPOFF];
+  var needRides = this.columnValues[this.NEEDS_RIDES];
+  if(null != needPickup && null != needRides){
+    needDropOff = needDropOff.trim().toUpperCase();
+    needRides = needRides.trim().toUpperCase();
+    ret = dropOff === "NEEDS" || needsRide === "NEEDS";
+  }
+  return ret;
 };
 
 
@@ -410,7 +435,7 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightArrivalTime: " + Utilities.formatDate(this.flightArrivalDate, "PST", "hh:mm a"));
     Logger.log("flightArrivalNum: " + this.flightArrivalNum);
     Logger.log("flightArrivalNotes: " + this.flightArrivalNotes);
-    Logger.log("needsPickUp: " + this.needsPickUp);
+    Logger.log("needsPickUp: " + this.needsPickUp());
     Logger.log("isArrivalShiftEntered: " + this.isArrivalShiftEntered());
     Logger.log("flightArrivalDriver: " + this.flightArrivalDriver);
     Logger.log("flightArrivalPhone: " + this.flightArrivalPhone);
@@ -423,7 +448,7 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightDepartNum: " + this.flightDepartNum);
     Logger.log("flightDepartNotes: " + this.flightDepartNotes);
     Logger.log("needsDropOff: " + this.needsDropOff());
-    Logger.log("isDepartureShiftEntered: " + this.isDepartureShiftEntered);
+    Logger.log("isDepartureShiftEntered: " + this.isDepartureShiftEntered());
     Logger.log("flightDepartDriver: " + this.flightDepartDriver);
     Logger.log("flightDepartPhone: " + this.flightDepartPhone);
   }

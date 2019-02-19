@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /*global Utilities: false */
 /*global Logger: false */
 /*global mergeDateTime: false */
@@ -74,8 +75,8 @@ RowBase.prototype.getHeaderArray = function () {
 RowBase.prototype.findDifference = function (row) {
   var found = false;
   var ret = 0;
-  while(ret < this.columnItems.length && !found) {
-    found = this.columnItems[ret] === row.columnItems[ret];
+  while(ret < this.columnValues.length && !found) {
+    found = this.columnValues[ret] === row.columnValues[ret];
     ++ret;
   }
   if(!found){
@@ -96,10 +97,12 @@ RowBase.prototype.matchesTemplateRow = function (templateRow) {
   var match = true;
   var index = 0;
   while(index < this.columnItems.length && match) {
-    if(templateRow.columnItems[index] && templateRow.columnItems[index] !== ""){
-      match = this.columnItems[index] === templateRow.columnItems[index];
+    var testValue = templateRow.columnValues[index];
+    if(null != testValue && testValue !== ""){
+      match = this.columnValues[index] === testValue;
     }
     ++index;
+
   }
   return match;
 };
@@ -115,7 +118,6 @@ RowBase.prototype.copy = function(row){this.fromArray(row.columnValues);};
  * @param {Array} newRowArray - the array to set the column values from
  */
 RowBase.prototype.fromArray = function (newRowArray) {
-  Logger.log("RowBase::fromArray " + newRowArray[1]);
   for (var i = 0; i < this.columnItems.length; ++i) {
     var item = newRowArray[i];
     if ("@" === this.formatStrings[i]) {
@@ -198,7 +200,6 @@ PerformerRow.prototype.columnItems = [
 
 function PerformerRow(){
   RowBase.call(this);
-  Logger.log("defining basic Row Properties");
   Object.defineProperty(this, 'actName'             ,{get: function(){return this.columnValues[this.ACT_NAME        ];}, set: function(value){this.columnValues[this.ACT_NAME        ] = value;}, enumerable: true});
   Object.defineProperty(this, 'firstName'           ,{get: function(){return this.columnValues[this.FIRST_NAME      ];}, set: function(value){this.columnValues[this.FIRST_NAME      ] = value;}, enumerable: true});
   Object.defineProperty(this, 'lastName'            ,{get: function(){return this.columnValues[this.LAST_NAME       ];}, set: function(value){this.columnValues[this.LAST_NAME       ] = value;}, enumerable: true});
@@ -230,7 +231,6 @@ function PerformerRow(){
   Object.defineProperty(this, 'housingAddress'      ,{get: function(){return this.columnValues[this.HOUSING_ADDDRESS];}, set: function(value){this.columnValues[this.HOUSING_ADDDRESS] = value;}, enumerable: true});
   Object.defineProperty(this, 'housingEmail'        ,{get: function(){return this.columnValues[this.HOUSING_EMAIL   ];}, set: function(value){this.columnValues[this.HOUSING_EMAIL   ] = value;}, enumerable: true});
 
-  Logger.log("defining Row date properties");
   Object.defineProperty(this, 'flightArrivalDate', {
     enumerable: true,
     get: function() {
@@ -256,7 +256,6 @@ function PerformerRow(){
   //**
   //* Test if the row has an address
   //*
- Logger.log("defining Row read only boolean properties");
  Object.defineProperty(this, 'hasHousingAddress', {
     enumerable: true,
     get: function () {
@@ -291,7 +290,6 @@ function PerformerRow(){
       return this.hasHousingAddress && this.hasDeparture;
     }
   });
-  Logger.log("Row created");
  }
 
 
@@ -343,7 +341,7 @@ PerformerRow.prototype.needsDropOff = function() {
   var ret = false;
   var needDropOff = this.columnValues[this.NEEDS_DROPOFF];
   var needRides = this.columnValues[this.NEEDS_RIDES];
-  if(null != needPickup && null != needRides){
+  if(null != needDropOff && null != needRides){
     needDropOff = needDropOff.trim().toUpperCase();
     needRides = needRides.trim().toUpperCase();
     ret = dropOff === "NEEDS" || needsRide === "NEEDS";

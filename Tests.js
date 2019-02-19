@@ -16,15 +16,6 @@ function testStartsWith(){
 }
 
 
-function testFindPerformer(){
-  var performerName = 'Alan Plotkin';
-
-  var performerSheet = new PerformerSheet();
-  var performer = performerSheet.findPerformerByName(performerName);
-  performer.toLog();
-}
-
-
 function testPerformerRow() {
   var errorMessage = null;
   var performerSheet = new PerformerSheet();

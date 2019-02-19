@@ -179,9 +179,9 @@ PerformerSheet.prototype.refreshRows = function () {
   var fullRange = this.sheet.getRange(this.startingRow, 1, this.numRows, this.numColumns);
   var rawArrays = fullRange.getValues();
   this.rows = new Array();
-  for(rowArray in rawArrays){
+  for(var i = 0; i < rawArrays.length; ++i){
     var row = new this.Row();
-    row.fromArray(rowArray);
+    row.fromMappedArray(rawArrays[i]);
     if(row.numberInAct && row.numberInAct !== ""){
       this.rows.push(row);
     }
@@ -194,7 +194,7 @@ PerformerSheet.prototype.findPerformerByName = function(name) {
   var nameParts = name.split(" ");
   NameRow.firstName = nameParts[0];
   NameRow.lastName = nameParts[1];
-  for(var i = 0 ; i < this.rows.length && null === performer ; ++i){
+  for(var i = 0; i < this.rows.length && null === performer; ++i){
     if(this.rows[i].matchesTemplateRow(NameRow)) {
       performer = this.rows[i];
     }

@@ -30,6 +30,7 @@ ColumnItem.prototype.isStringFormat = function () {
 //  derived classes should provide all these properties
 RowBase.prototype.constructor = RowBase;
 RowBase.prototype.columnItems = null;
+RowBase.prototype.sheetIndex = 0;
 RowBase.prototype.numColumns = function(){return this.columnItems.length;};
 
 /**
@@ -115,21 +116,22 @@ RowBase.prototype.copy = function(row){this.fromArray(row.columnValues);};
 
 /**
  * Set the array of column values to the values given in the Arra
- * @param {Array} newRowArray - the array to set the column values from
+ * @param {Array}sourceArray - the array to set the column values from
  */
-RowBase.prototype.fromArray = function (newRowArray) {
+RowBase.prototype.fromArray = function (sourceArray) {
   for (var i = 0; i < this.columnItems.length; ++i) {
-    var item = newRowArray[i];
-    if ("@" === this.formatStrings[i]) {
+    var sourceIndex = i
+    var item = sourceArray[i];
+    if ( "@" === this.formatStrings[i]) {
       item = String(item).trim();
     }
     this.columnValues[i] = item;
   }
 };
 
-RowBase.prototype.toArray = function (outArray) {
+RowBase.prototype.toArray = function (destinationArray) {
   for (var i = 0; i < this.columnItems.length; ++i) {
-    outArray[i] = this.columnValues[i];
+    destinationArray[i] = this.columnValues[i];
   }
 };
 
@@ -142,6 +144,7 @@ RowBase.prototype.fromMappedArray = function (sourceArray) {
     }
     this.columnValues[i] = item;
   }
+  var array = this.columnValues;
 };
 
 RowBase.prototype.toMappedArray = function (destinationArray) {
@@ -150,11 +153,6 @@ RowBase.prototype.toMappedArray = function (destinationArray) {
   }
 };
 
-// function logRange(range, strsArray){
-//   Logger.log("Range starting cell Row:Column : " + range.getRow() + ":" + range.getColumn());
-//   Logger.log("Range NumRows:NumColumns : " + range.getNumRows() + ":" + range.getNumColumns());
-//   Logger.log("StrsArray Size NumRows:NumColumns : " + strsArray.length + ":" + strsArray[0].length);
-// };
 
 //---------------------- PerformerRow -----------------------------------------
 
@@ -292,7 +290,6 @@ function PerformerRow(){
   });
  }
 
-
 PerformerRow.prototype.isArrivalShiftEntered = function(){
   var ret = false;
   var shiftEntered = this.columnValues[this.ARRIVAL_SHIFT_ENTERED];
@@ -344,18 +341,18 @@ PerformerRow.prototype.needsDropOff = function() {
   if(null != needDropOff && null != needRides){
     needDropOff = needDropOff.trim().toUpperCase();
     needRides = needRides.trim().toUpperCase();
-    ret = dropOff === "NEEDS" || needsRide === "NEEDS";
+    ret = needDropOff === "NEEDS" || needRides === "NEEDS";
   }
   return ret;
 };
 
 
-  /**
-  * Merge a tagged document with this row's information
-  * @param {String} docBody - In/Out string of the document to merge to
-  * @param {Bool} isArrival - set to true if the document is to use arrival
-  *                           information or false if to use departure information
-  */
+/**
+* Merge a tagged document with this row's information
+* @param {String} docBody - In/Out string of the document to merge to
+* @param {Bool} isArrival - set to true if the document is to use arrival
+*                           information or false if to use departure information
+*/
 PerformerRow.prototype.mergeToDoc = function (docBody, isArrival) {
   var directionPickup = "pick up";
   var directionDropoff = "drop off";
@@ -458,7 +455,7 @@ PerformerRow.prototype.toLog = function () {
 
 
 
-function TestRowCreation()
+function TestPerformerRowCreation()
 {
   var testRowArray = [3,"Alan Plotkin",1,"Alan","Plotkin","512-632-9468","AL@i3eventmarketing.com","Fly","Festival buys","1/19/2019","Done","$264.00","MFest Paid","Needs","Needs","Needs","","1","","","","","","","","Austin, TX (change planes in Sacramento, CA)","SEA","3/13/2019","7:05 PM","SW#0445","","Needs","","He said Uncle Bucky always picks him up","","","AUS","SEA","4/8/2019","12:25 PM","SW#2222","","Needs","","","","","","","","","100 Fremont.ave","","Always stays with Kirby and Adrian he said","",""];
   var row = new PerformerRow();
@@ -466,3 +463,50 @@ function TestRowCreation()
   row.toLog();
 
 }
+
+ShiftRow.prototype = new RowBase();
+ShiftRow.prototype.constructor = ShiftRow;
+ShiftRow.prototype.columnItems = [
+  { name: "SHIFT_DATE" , header: "Date"      , mapIndex:    0, format: "mm-dd-yyyy"},
+  { name: "START_TIME" , header: "Start"     , mapIndex:    1, format: "hh:mm aa"},
+  { name: "END_TIME"   , header: "End"       , mapIndex:    2, format: "hh:mm aa"},
+  { name: "TEAM_NAME"  , header: "Team"      , mapIndex:    3, format: "@"},
+  { name: "CREW_SIZE"  , header: "Quantity"  , mapIndex:    4, format: "@"},
+  { name: "LOCATION" 	 , header: "Location"  , mapIndex:    5, format: "@"},
+  { name: "ASSIGNED" 	 , header: "Assigned"  , mapIndex:    6, format: "@"},
+  { name: "SUBJECT"    , header: "Subject"   , mapIndex:    7, format: "@"},
+  { name: "DETAIL"     , header: "Detail"    , mapIndex:    8, format: "@"}
+];
+
+function ShiftRow(){
+  RowBase.call(this);
+  Object.defineProperty(this, 'shiftDate' ,{get: function(){return this.columnValues[this.SHIFT_DATE];}, set: function(value){this.columnValues[this.SHIFT_DATE] = value;}, enumerable: true});
+  Object.defineProperty(this, 'startTime' ,{get: function(){return this.columnValues[this.START_TIME];}, set: function(value){this.columnValues[this.START_TIME] = value;}, enumerable: true});
+  Object.defineProperty(this, 'endTime'   ,{get: function(){return this.columnValues[this.END_TIME  ];}, set: function(value){this.columnValues[this.END_TIME  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'teamName'  ,{get: function(){return this.columnValues[this.TEAM_NAME ];}, set: function(value){this.columnValues[this.TEAM_NAME ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'crewSize'  ,{get: function(){return this.columnValues[this.CREW_SIZE ];}, set: function(value){this.columnValues[this.CREW_SIZE ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'location'  ,{get: function(){return this.columnValues[this.LOCATION  ];}, set: function(value){this.columnValues[this.LOCATION  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'assigned'  ,{get: function(){return this.columnValues[this.ASSIGNED  ];}, set: function(value){this.columnValues[this.ASSIGNED  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'subject'   ,{get: function(){return this.columnValues[this.SUBJECT   ];}, set: function(value){this.columnValues[this.SUBJECT   ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'Details'   ,{get: function(){return this.columnValues[this.DETAIL    ];}, set: function(value){this.columnValues[this.DETAIL    ] = value;}, enumerable: true});
+  this.teamName = 'Drivers';
+  this.crewSize = 1;
+  this.assigned = "";
+}
+
+
+ShiftRow.prototype.fromPerformerRow = function(performerRow, isArrival){
+  var date = isArrival ? performerRow.flightArrivalDate : performerRow.flightDepartDate;
+  var time = isArrival ? performerRow.flightArrivalTime : performerRow.flightDepartTime;
+  var shiftDateTime =  mergeDateTime(date, time);
+  this.shiftDate = date;
+  this.startTime = RoundTo5Minutes( isArrival ? Sub15Minutes(shiftDateTime) : Sub150Minutes(shiftDateTime) );
+  this.endTime =  RoundTo5Minutes( isArrival ? Add90Minutes(shiftDateTime) : shiftDateTime );
+
+  this.location = isArrival ? "Sea-Tac Airport" : "Performer's Housing";
+  this.assigned = "";
+  this.subject = performerRow.mergeSubject("<SubjectDirection> <FirstName> <LastName> (of <ActName>)", isArrival);
+  this.details = this.subject + " at SeaTac Airport and deliver them to their arranged housing. Details will be sent once you have taken the shift and they are available.";
+}
+
+

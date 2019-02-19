@@ -13,12 +13,15 @@
 SheetBase.prototype.constructor = SheetBase;
 SheetBase.prototype.sheet = null;
 SheetBase.prototype.Row = null;
-SheetBase.prototype.numRows = 0;
-SheetBase.prototype.numColumns = 0;
 SheetBase.prototype.startingRow = 1;
 SheetBase.prototype.rows = null;
 
-function SheetBase(){
+function SheetBase(spreadSheetProperty, sheetName, useMapped){
+  if(null != spreadSheetProperty && null != sheetName){
+    this.useMapped = useMapped;
+    this.loadSheet(spreadSheetProperty, sheetName);
+    this.refreshRows();
+  }
 }
 
 SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
@@ -32,8 +35,11 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
     if(null === this.sheet){
       this.sheet = spreadSheet.insertSheet(sheetName);
       this.sheet.insertRows(1);
-      var firstRow = this.sheet.getRange(1, 1, 1, this.numColumns);
-      firstRow.setValues(this.getHeaderArray());
+      row = new this.Row();
+      var firstRow = this.sheet.getRange(1, 1, 1, row.numColumns);
+      header = new Array();
+      header.push(row.getHeaderArray())
+      firstRow.setValues(header);
     }
   }
 
@@ -42,17 +48,29 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
   }
 };
 
+SheetBase.prototype.rowIsValid = function(rowBase){
+  return false;
+}
 
-SheetBase.prototype.refreshRows = function () {
-  this.numRows = this.sheet.getDataRange().getLastRow() + 1 - this.startingRow;
-  var fullRange = this.sheet.getRange(startingRow, 1, this.numRows, this.numColumns);
+SheetBase.prototype.refreshRows = function (useMapped) {
+  var sheetDataRange = this.sheet.getDataRange();
+  var numSheetRows = sheetDataRange.getLastRow() + 1 - this.startingRow;
+  var numColumns = sheetDataRange.getLastColumn()
+  var fullRange = this.sheet.getRange(this.startingRow, 1, numSheetRows, numColumns);
   var rawArrays = fullRange.getValues();
   this.rows = new Array();
-  rawArrays.forEach(function(rowArray){
+  for(var i = 0; i < rawArrays.length; ++i){
     var row = new this.Row();
-    row.fromArray(rowArray);
-    this.rows.push(row);
-  });
+    if(this.useMapped){
+      row.fromMappedArray(rawArrays[i]);
+    }
+    else{
+      row.fromArray(rawArrays[i]);
+    }
+    if(this.rowIsValid(row)){
+      this.rows.push(row);
+    }
+  }
 };
 
 /**
@@ -70,7 +88,7 @@ SheetBase.prototype.getSheetRowIndex = function(rowIndex){
 SheetBase.prototype.getRowRange = function(rowNumber){
   var range = null;
   if(null !== this.sheet){
-    range = this.sheet.getRange(this.getSheetRowIndex(rowNumber), 1, 1, this.numColumns);
+    range = this.sheet.getRange(this.getSheetRowIndex(rowNumber), 1, 1, this.sheet.getLastColumn());
   }
   return range;
 };
@@ -105,7 +123,7 @@ SheetBase.prototype.matchRows = function(currentRow, searchRow){
 */
 SheetBase.prototype.findBy = function(rowPredicate, predicateParam) {
   var row = null;
-  for(var index = 0; this.numRows > index && null === row; ++index){
+  for(var index = 0; this.rows.length > index && null === row; ++index){
       var currentRow = this.rows[index];
       if(rowPredicate(currentRow, predicateParam)){
           row = currentRow;
@@ -145,7 +163,6 @@ SheetBase.prototype.addRow = function(row){
   this.sheet.appendRow(row.columnValues);
   var range = sheet.getRange(sheet.getLastRow(), 1, 1, row.columnItems.length);
   range.setNumberFormats(this.formatStrings);
-  ++this.numRows;
 };
 
 
@@ -161,32 +178,21 @@ SheetBase.prototype.updateRow = function(newRow) {
   }
 };
 
+//------------------------------ PerformerSheet -------------------------------------
 
 PerformerSheet.prototype = new SheetBase();
 PerformerSheet.prototype.constructor = PerformerSheet;
 PerformerSheet.prototype.Row = PerformerRow;
-PerformerSheet.prototype.numColumns = PerformerRow.prototype.columnItems.length;
 
 function PerformerSheet()
 {
-  SheetBase();
-  this.loadSheet("PERFORMER_SHEET_ID", "ACTS");
-  this.refreshRows();
+  SheetBase.call(this,"PERFORMER_SHEET_ID", "ACTS", true);
 }
 
-PerformerSheet.prototype.refreshRows = function () {
-  this.numRows = this.sheet.getDataRange().getLastRow() + 1 - this.startingRow;
-  var fullRange = this.sheet.getRange(this.startingRow, 1, this.numRows, this.numColumns);
-  var rawArrays = fullRange.getValues();
-  this.rows = new Array();
-  for(var i = 0; i < rawArrays.length; ++i){
-    var row = new this.Row();
-    row.fromMappedArray(rawArrays[i]);
-    if(row.numberInAct && row.numberInAct !== ""){
-      this.rows.push(row);
-    }
-  }
-};
+PerformerSheet.prototype.rowIsValid = function(rowBase){
+  return rowBase.numberInAct && rowBase.numberInAct !== "";
+}
+
 
 PerformerSheet.prototype.findPerformerByName = function(name) {
   var performer = null;
@@ -218,5 +224,48 @@ function testFindPerformer(){
     Logger.log("Performer not found");
   }
 }
+
+
+ShiftSheet.prototype = new SheetBase();
+ShiftSheet.prototype.constructor = ShiftSheet;
+ShiftSheet.prototype.Row = ShiftRow;
+
+
+function ShiftSheet(){
+  SheetBase.call("SHIFT_SHEET_ID", "Sheet1", false);
+}
+
+ShiftSheet.prototype.createShift = function(performerRow, isArrival){
+    var rowNum = this.getNumRows();
+    if(rowNum > 1)
+      ++rowNum;
+    var shiftRow = new SimpleShiftRow(this.getShiftRowRange(this.getNumRows() + 1));
+    shiftRow.fromPerformerRow(performerRow, isArrival);
+  }
+
+  /* create a new shift row if needed for the given preformer
+   * return: true if row was added else false
+   */
+  this.processRow = function(performerRow){
+      if(   performerRow.flightArrivalNum != null
+         && !(performerRow.flightArrivalisShiftEntered)
+         && performerRow.flightArrivalNum !== ""
+         && performerRow.needsPickUp()){
+          this.createShift(performerRow, true);
+          performerRow.flightArrivalisShiftEntered = true;
+      }
+
+      if(   performerRow.flightDepartNum !== null
+         && !(performerRow.flightDepartIsShiftEntered)
+         && performerRow.flightDepartNum !== ""
+         && performerRow.needsDropOff()){
+            this.createShift(performerRow, false);
+            performerRow.flightDepartIsShiftEntered = true;
+      }
+      Logger.log("Updating");
+      performerRow.toLog();
+    }
+
+
 
 

@@ -22,6 +22,7 @@ function SheetBase(){
 }
 
 SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
+  // eslint-disable-next-line eqeqeq
   if(null != spreadSheetProperty && null != sheetName){
     var scriptProperties = PropertiesService.getScriptProperties();
     var spreadSheetID = scriptProperties.getProperty(spreadSheetProperty);
@@ -193,7 +194,7 @@ PerformerSheet.prototype.findPerformerByName = function(name) {
   var nameParts = name.split(" ");
   NameRow.firstName = nameParts[0];
   NameRow.lastName = nameParts[1];
-  for(var i = 0; i < this.rows.length && null === performer; ++i){
+  for(var i = 0 ; i < this.rows.length && null === performer ; ++i){
     if(this.rows[i].matchesTemplateRow(NameRow)) {
       performer = this.rows[i];
     }

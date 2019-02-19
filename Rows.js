@@ -252,93 +252,88 @@ function PerformerRow(){
       this.departTime = date.getTimeString();
     }
   });
-  Logger.log("defining Row shift properties");
-  Object.defineProperty(this, 'flightArrivalIsShiftEntered', {
+
+  //**
+  //* Test if the row has an address
+  //*
+ Logger.log("defining Row read only boolean properties");
+ Object.defineProperty(this, 'hasHousingAddress', {
     enumerable: true,
-    get: function(){
-      return  this.columnValues[this.ARRIVAL_SHIFT_ENTERED].trim() === "Yes";
-    },
-    set: function(isShiftEntered) {
-      this.columnValues[this.ARRIVAL_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
+    get: function () {
+      return this.housingAddress !== null && this.housingAddress !== "";
     }
   });
-  Object.defineProperty(this, 'flightDepartIsShiftEntered', {
+
+  Object.defineProperty(this, 'hasArrival', {
     enumerable: true,
-    get: function(){
-      return  this.columnValues[this.DEPART_SHIFT_ENTERED].trim() === "Yes";
-    },
-    set: function(isShiftEntered) {
-      this.columnValues[this.DEPART_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
+    get: function () {
+      return this.flightArrivalNum !== null && this.flightArrivalNum !== "";
     }
   });
-  // Logger.log("defining Row pickup and dropoff properties");
-  // // needsPickUp
-  // Object.defineProperty(this, 'needsPickUp', {
-  //   enumerable: true,
-  //   get: function () {
-  //     var pickup = this.columnValues[this.NEEDS_PICKUP].trim();
-  //     var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-  //     return pickup.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
-  //   }
-  // });
-  // // needsDropOff
-  // Object.defineProperty(this, 'needsDropOff', {
-  //   enumerable: true,
-  //   get: function() {
-  //     var dropOff = this.columnValues[this.NEEDS_DROPOFF].trim();
-  //     var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-  //     return dropOff.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
-  //   }
-  // });
 
-  /**
-  * Test if the row has an address
-  */
-//  Logger.log("defining Row read only boolean properties");
-//  Object.defineProperty(this, 'hasHousingAddress', {
-//     enumerable: true,
-//     get: function () {
-//       return this.housingAddress !== null && this.housingAddress !== "";
-//     }
-//   });
+  Object.defineProperty(this, 'hasDeparture', {
+    enumerable: true,
+    get: function () {
+      return this.flightDepartNum !== null && this.flightDepartNum !== "";
+    }
+  });
 
-//   Object.defineProperty(this, 'hasArrival', {
-//     enumerable: true,
-//     get: function () {
-//       return this.flightArrivalNum !== null && this.flightArrivalNum !== "";
-//     }
-//   });
+  Object.defineProperty(this, 'isValidForArrival', {
+    enumerable: true,
+    get: function () {
+      return this.hasHousingAddress && this.hasArrival;
+    }
+  });
 
-//   Object.defineProperty(this, 'hasDeparture', {
-//     enumerable: true,
-//     get: function () {
-//       return this.flightDepartNum !== null && this.flightDepartNum !== "";
-//     }
-//   });
-
-//   Object.defineProperty(this, 'isValidForArrival', {
-//     enumerable: true,
-//     get: function () {
-//       return this.hasHousingAddress && this.hasArrival;
-//     }
-//   });
-
-//   Object.defineProperty(this, 'isValidForDeparture', {
-//     enumerable: true,
-//     get: function () {
-//       return this.hasHousingAddress && this.hasDeparture;
-//     }
-//   });
+  Object.defineProperty(this, 'isValidForDeparture', {
+    enumerable: true,
+    get: function () {
+      return this.hasHousingAddress && this.hasDeparture;
+    }
+  });
   Logger.log("Row created");
-
  }
+
+
+PerformerRow.prototype.isArrivalShiftEntered = function(){
+  return  this.columnValues[this.ARRIVAL_SHIFT_ENTERED].trim() === "Yes";
+};
+
+PerformerRow.prototype.arrivalShiftEntered = function(isShiftEntered) {
+  this.columnValues[this.ARRIVAL_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
+};
+
+
+PerformerRow.prototype.isDepartureShiftEntered = function(){
+  return  this.columnValues[this.DEPART_SHIFT_ENTERED].trim() === "Yes";
+};
+
+PerformerRow.prototype.departureShiftEntered = function(isShiftEntered) {
+  this.columnValues[this.DEPART_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
+};
+
+// needsPickUp
+PerformerRow.prototype.needsPickUp = function() {
+  var pickup = this.columnValues[this.NEEDS_PICKUP].trim();
+  var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
+  return pickup.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+};
+
+  // needsDropOff
+PerformerRow.prototype.needsDropOff = function() {
+  var dropOff = this.columnValues[this.NEEDS_DROPOFF].trim();
+  var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
+  return dropOff.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+};
+
+
   /**
   * Merge a tagged document with this row's information
   * @param {String} docBody - In/Out string of the document to merge to
   * @param {Bool} isArrival - set to true if the document is to use arrival
   *                           information or false if to use departure information
   */
- PerformerRow.prototype.mergeToDoc = function (docBody, isArrival) {
+PerformerRow.prototype.mergeToDoc = function (docBody, isArrival) {
   var directionPickup = "pick up";
   var directionDropoff = "drop off";
 
@@ -415,8 +410,8 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightArrivalTime: " + Utilities.formatDate(this.flightArrivalDate, "PST", "hh:mm a"));
     Logger.log("flightArrivalNum: " + this.flightArrivalNum);
     Logger.log("flightArrivalNotes: " + this.flightArrivalNotes);
-    //Logger.log("needsPickUp: " + this.needsPickUp);
-    Logger.log("flightArrivalisShiftEntered: " + this.flightArrivalisShiftEntered);
+    Logger.log("needsPickUp: " + this.needsPickUp);
+    Logger.log("isArrivalShiftEntered: " + this.isArrivalShiftEntered());
     Logger.log("flightArrivalDriver: " + this.flightArrivalDriver);
     Logger.log("flightArrivalPhone: " + this.flightArrivalPhone);
   }
@@ -427,8 +422,8 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightDepartTime: " + this.flightDepartTime);
     Logger.log("flightDepartNum: " + this.flightDepartNum);
     Logger.log("flightDepartNotes: " + this.flightDepartNotes);
-    //Logger.log("needsDropOff: " + this.needsDropOff);
-    Logger.log("flightDepartIsShiftEntered: " + this.flightDepartIsShiftEntered);
+    Logger.log("needsDropOff: " + this.needsDropOff());
+    Logger.log("isDepartureShiftEntered: " + this.isDepartureShiftEntered);
     Logger.log("flightDepartDriver: " + this.flightDepartDriver);
     Logger.log("flightDepartPhone: " + this.flightDepartPhone);
   }
@@ -438,13 +433,13 @@ PerformerRow.prototype.toLog = function () {
   Logger.log("housingEmail: " + this.housingEmail);
 };
 
-var testRowArray = (3,"Alan Plotkin",1,"Alan","Plotkin","512-632-9468","AL@i3eventmarketing.com","Fly","Festival buys","1/19/2019","Done","$264.00","MFest Paid","Needs","Needs","Needs","","1","","","","","","","","Austin, TX (change planes in Sacramento, CA)","SEA","3/13/2019","7:05 PM","SW#0445","","Needs","","He said Uncle Bucky always picks him up","","","AUS","SEA","4/8/2019","12:25 PM","SW#2222","","Needs","","","","","","","","","","","Always stays with Kirby and Adrian he said","","");
 
 
 function TestRowCreation()
 {
+  var testRowArray = [3,"Alan Plotkin",1,"Alan","Plotkin","512-632-9468","AL@i3eventmarketing.com","Fly","Festival buys","1/19/2019","Done","$264.00","MFest Paid","Needs","Needs","Needs","","1","","","","","","","","Austin, TX (change planes in Sacramento, CA)","SEA","3/13/2019","7:05 PM","SW#0445","","Needs","","He said Uncle Bucky always picks him up","","","AUS","SEA","4/8/2019","12:25 PM","SW#2222","","Needs","","","","","","","","","100 Fremont.ave","","Always stays with Kirby and Adrian he said","",""];
   var row = new PerformerRow();
-  row.fromArray(testRowArray);
-  row.toLog()
+  row.fromMappedArray(testRowArray);
+  row.toLog();
 
 }

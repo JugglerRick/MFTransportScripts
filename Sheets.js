@@ -2,6 +2,7 @@
 /*global PropertiesService: false */
 /*global Logger: false*/
 
+// eslint-disable-next-line valid-jsdoc
 /**
  *  This is an abstract basc class for the Sheets. It requires the following properties be present
  *  when the derived class calls it;
@@ -9,14 +10,22 @@
  * @param {String} spreadSheetProperty - name of the script property of the spreadSheetID
  * @param {String} sheetNameProperty - name of the script property of the sheetName
  */
-function SheetBase(spreadSheetProperty, sheetNameProperty) {
-  if(null !== spreadSheetProperty && null !== sheetNameProperty){
+SheetBase.prototype.constructor = SheetBase;
+SheetBase.prototype.sheet = null;
+SheetBase.prototype.Row = null;
+SheetBase.prototype.numRows = 0;
+SheetBase.prototype.numColumns = 0;
+SheetBase.prototype.startingRow = 1;
+SheetBase.prototype.rows = null;
+
+function SheetBase(){
+}
+
+SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
+  if(null != spreadSheetProperty && null != sheetName){
     var scriptProperties = PropertiesService.getScriptProperties();
     var spreadSheetID = scriptProperties.getProperty(spreadSheetProperty);
-    var sheetName = scriptProperties.getProperty(sheetNameProperty);
-    if(undefined === spreadSheet || null === spreadSheet){
-      spreadSheet = SpreadsheetApp.openById(spreadSheetID);
-    }
+    var spreadSheet = SpreadsheetApp.openById(spreadSheetID);
     this.sheet = spreadSheet.getSheetByName(sheetName);
 
     if(null === this.sheet){
@@ -29,15 +38,9 @@ function SheetBase(spreadSheetProperty, sheetNameProperty) {
 
   if(null !== this.sheet){
     this.startingRow = this.sheet.getFrozenRows() + 1;
-    this.refreshRows();
   }
-}
+};
 
-SheetBase.prototype.sheet = null;
-SheetBase.prototype.Row = null;
-SheetBase.prototype.numRows = 0;
-SheetBase.prototype.numColumns = 0;
-SheetBase.prototype.startingRow = 1;
 
 SheetBase.prototype.refreshRows = function () {
   this.numRows = this.sheet.getDataRange().getLastRow() + 1 - this.startingRow;
@@ -162,24 +165,27 @@ PerformerSheet.prototype = new SheetBase();
 PerformerSheet.prototype.constructor = PerformerSheet;
 PerformerSheet.prototype.Row = PerformerRow;
 PerformerSheet.prototype.numColumns = PerformerRow.prototype.columnItems.length;
-function PerformerSheet(){
-  SheetBase("PERFORMER_SHEET_ID", "ACTS");
+
+function PerformerSheet()
+{
+  SheetBase();
+  this.loadSheet("PERFORMER_SHEET_ID", "ACTS");
+  this.refreshRows();
 }
 
 PerformerSheet.prototype.refreshRows = function () {
   this.numRows = this.sheet.getDataRange().getLastRow() + 1 - this.startingRow;
-  var fullRange = this.sheet.getRange(startingRow, 1, this.numRows, this.numColumns);
+  var fullRange = this.sheet.getRange(this.startingRow, 1, this.numRows, this.numColumns);
   var rawArrays = fullRange.getValues();
   this.rows = new Array();
-  rawArrays.forEach(function(rowArray){
+  for(rowArray in rawArrays){
     var row = new this.Row();
     row.fromArray(rowArray);
     if(row.numberInAct && row.numberInAct !== ""){
       this.rows.push(row);
     }
-  });
+  }
 };
-
 
 PerformerSheet.prototype.findPerformerByName = function(name) {
   var performer = null;
@@ -187,7 +193,7 @@ PerformerSheet.prototype.findPerformerByName = function(name) {
   var nameParts = name.split(" ");
   NameRow.firstName = nameParts[0];
   NameRow.lastName = nameParts[1];
-  for(var i = 0 ; i < this.rows.length && null === performer ; ++i){
+  for(var i = 0; i < this.rows.length && null === performer; ++i){
     if(this.rows[i].matchesTemplateRow(NameRow)) {
       performer = this.rows[i];
     }
@@ -196,5 +202,20 @@ PerformerSheet.prototype.findPerformerByName = function(name) {
     Logger.log("findPerformer was unable to locate " + name);
   }
   return performer;
+};
 
+
+function testFindPerformer(){
+  var performerName = 'Alan Plotkin';
+
+  var performerSheet = new PerformerSheet();
+  var performer = performerSheet.findPerformerByName(performerName);
+  if(null !== performer){
+    performer.toLog();
+  }
+  else{
+    Logger.log("Performer not found");
+  }
 }
+
+

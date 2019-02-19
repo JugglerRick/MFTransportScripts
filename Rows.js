@@ -4,15 +4,12 @@
 
 'use strict';
 
-ColumnItem.constructor = ColumnItem;
+
+ColumnItem.prototype.constructor = ColumnItem;
 ColumnItem.prototype.header = "";
 ColumnItem.prototype.name = null;
 ColumnItem.prototype.format = "@";
 ColumnItem.prototype.mapIndex = 0;
-
-ColumnItem.prototype.isStringFormat = function () {
-  return this.format === ColumnItem.prototype.format;
-};
 
 function ColumnItem(name, header, format, mapIndex) {
   this.name = name;
@@ -20,6 +17,19 @@ function ColumnItem(name, header, format, mapIndex) {
   this.format = format;
   this.mapIndex = mapIndex;
 }
+
+
+
+ColumnItem.prototype.isStringFormat = function () {
+  return this.format === ColumnItem.prototype.format;
+};
+
+
+// RowBase properties that are required
+//  derived classes should provide all these properties
+RowBase.prototype.constructor = RowBase;
+RowBase.prototype.columnItems = null;
+RowBase.prototype.numColumns = function(){return this.columnItems.length;};
 
 /**
  * RowBase object constructor
@@ -36,17 +46,12 @@ function RowBase() {
     for (var i = 0; i < this.columnItems.length; ++i) {
       // define the column value indexs
       Object.defineProperty(this, this.columnItems[i].name, { value: i, writable: false, enumerable: false });
-            rowFormatStr.push(this.columnItems[i].format);
+      rowFormatStr.push(this.columnItems[i].format);
             //this.formatStrings.push(this.columnItems[i].format);
-        }
-    this.formatStrings.push(rowFormatStr);
     }
+    this.formatStrings.push(rowFormatStr);
+  }
 }
-
-// RowBase properties that are required
-//  derived classes should provide all these properties
-RowBase.prototype.columnItems = null;
-RowBase.prototype.numColumns = function(){return this.columnItems.length;};
 /**
  * Get the array of Column Header Names
  * @returns {String[]} the array of Column Names
@@ -92,7 +97,7 @@ RowBase.prototype.matchesTemplateRow = function (templateRow) {
   var index = 0;
   while(index < this.columnItems.length && match) {
     if(templateRow.columnItems[index] && templateRow.columnItems[index] !== ""){
-      match = this.columnItems[index] === row.columnItems[index];
+      match = this.columnItems[index] === templateRow.columnItems[index];
     }
     ++index;
   }
@@ -110,6 +115,7 @@ RowBase.prototype.copy = function(row){this.fromArray(row.columnValues);};
  * @param {Array} newRowArray - the array to set the column values from
  */
 RowBase.prototype.fromArray = function (newRowArray) {
+  Logger.log("RowBase::fromArray " + newRowArray[1]);
   for (var i = 0; i < this.columnItems.length; ++i) {
     var item = newRowArray[i];
     if ("@" === this.formatStrings[i]) {
@@ -150,10 +156,10 @@ RowBase.prototype.toMappedArray = function (destinationArray) {
 
 //---------------------- PerformerRow -----------------------------------------
 
-PerformerRow.prototype = new RowBase();
 PerformerRow.prototype.constructor = PerformerRow;
+PerformerRow.prototype = new RowBase();
 PerformerRow.prototype.columnItems = [
-  { name: "ACT_TYPE"              , header: "" , mapIndex:    0, format: "#"}
+  { name: "ACT_TYPE"              , header: "" , mapIndex:    0, format: "#"},
   { name: "ACT_NAME"              , header: "" , mapIndex:    1, format: "@"},
   { name: "NUMBER_IN_ACT"         , header: "" , mapIndex:    2, format: "@"},
   { name: "FIRST_NAME"            , header: "" , mapIndex:    3, format: "@"},
@@ -190,8 +196,9 @@ PerformerRow.prototype.columnItems = [
   { name: "HOUSING_EMAIL"         , header: "" , mapIndex:   52, format: "@"}
 ];
 
- function PerformerRow(){
+function PerformerRow(){
   RowBase.call(this);
+  Logger.log("defining basic Row Properties");
   Object.defineProperty(this, 'actName'             ,{get: function(){return this.columnValues[this.ACT_NAME        ];}, set: function(value){this.columnValues[this.ACT_NAME        ] = value;}, enumerable: true});
   Object.defineProperty(this, 'firstName'           ,{get: function(){return this.columnValues[this.FIRST_NAME      ];}, set: function(value){this.columnValues[this.FIRST_NAME      ] = value;}, enumerable: true});
   Object.defineProperty(this, 'lastName'            ,{get: function(){return this.columnValues[this.LAST_NAME       ];}, set: function(value){this.columnValues[this.LAST_NAME       ] = value;}, enumerable: true});
@@ -223,6 +230,7 @@ PerformerRow.prototype.columnItems = [
   Object.defineProperty(this, 'housingAddress'      ,{get: function(){return this.columnValues[this.HOUSING_ADDDRESS];}, set: function(value){this.columnValues[this.HOUSING_ADDDRESS] = value;}, enumerable: true});
   Object.defineProperty(this, 'housingEmail'        ,{get: function(){return this.columnValues[this.HOUSING_EMAIL   ];}, set: function(value){this.columnValues[this.HOUSING_EMAIL   ] = value;}, enumerable: true});
 
+  Logger.log("defining Row date properties");
   Object.defineProperty(this, 'flightArrivalDate', {
     enumerable: true,
     get: function() {
@@ -244,6 +252,7 @@ PerformerRow.prototype.columnItems = [
       this.departTime = date.getTimeString();
     }
   });
+  Logger.log("defining Row shift properties");
   Object.defineProperty(this, 'flightArrivalIsShiftEntered', {
     enumerable: true,
     get: function(){
@@ -262,63 +271,65 @@ PerformerRow.prototype.columnItems = [
       this.columnValues[this.DEPART_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
     }
   });
-
-  // needsPickUp
-  Object.defineProperty(this, 'needsPickUp', {
-    enumerable: true,
-    get: function () {
-      var pickup = this.columnValues[this.NEEDS_PICKUP].trim();
-      var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-      return pickup.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
-    }
-  });
-  // needsDropOff
-  Object.defineProperty(this, 'needsDropOff', {
-    enumerable: true,
-    get: function() {
-      var dropOff = this.columnValues[this.NEEDS_DROPOFF].trim();
-      var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
-      return dropOff.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
-    }
-  });
+  // Logger.log("defining Row pickup and dropoff properties");
+  // // needsPickUp
+  // Object.defineProperty(this, 'needsPickUp', {
+  //   enumerable: true,
+  //   get: function () {
+  //     var pickup = this.columnValues[this.NEEDS_PICKUP].trim();
+  //     var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
+  //     return pickup.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+  //   }
+  // });
+  // // needsDropOff
+  // Object.defineProperty(this, 'needsDropOff', {
+  //   enumerable: true,
+  //   get: function() {
+  //     var dropOff = this.columnValues[this.NEEDS_DROPOFF].trim();
+  //     var needsRide = this.columnValues[this.NEEDS_RIDES].trim();
+  //     return dropOff.toUpperCase() === "NEEDS" || needsRide.toUpperCase() === "NEEDS";
+  //   }
+  // });
 
   /**
   * Test if the row has an address
   */
-  Object.defineProperty(this, 'hasHousingAddress', {
-    enumerable: true,
-    get: function () {
-      return this.housingAddress !== null && this.housingAddress !== "";
-    }
-  });
+//  Logger.log("defining Row read only boolean properties");
+//  Object.defineProperty(this, 'hasHousingAddress', {
+//     enumerable: true,
+//     get: function () {
+//       return this.housingAddress !== null && this.housingAddress !== "";
+//     }
+//   });
 
-  Object.defineProperty(this, 'hasArrival', {
-    enumerable: true,
-    get: function () {
-      return this.flightArrivalNum !== null && this.flightArrivalNum !== "";
-    }
-  });
+//   Object.defineProperty(this, 'hasArrival', {
+//     enumerable: true,
+//     get: function () {
+//       return this.flightArrivalNum !== null && this.flightArrivalNum !== "";
+//     }
+//   });
 
-  Object.defineProperty(this, 'hasDeparture', {
-    enumerable: true,
-    get: function () {
-      return this.flightDepartNum !== null && this.flightDepartNum !== "";
-    }
-  });
+//   Object.defineProperty(this, 'hasDeparture', {
+//     enumerable: true,
+//     get: function () {
+//       return this.flightDepartNum !== null && this.flightDepartNum !== "";
+//     }
+//   });
 
-  Object.defineProperty(this, 'isValidForArrival', {
-    enumerable: true,
-    get: function () {
-      return this.hasHousingAddress && this.hasArrival;
-    }
-  });
+//   Object.defineProperty(this, 'isValidForArrival', {
+//     enumerable: true,
+//     get: function () {
+//       return this.hasHousingAddress && this.hasArrival;
+//     }
+//   });
 
-  Object.defineProperty(this, 'isValidForDeparture', {
-    enumerable: true,
-    get: function () {
-      return this.hasHousingAddress && this.hasDeparture;
-    }
-  });
+//   Object.defineProperty(this, 'isValidForDeparture', {
+//     enumerable: true,
+//     get: function () {
+//       return this.hasHousingAddress && this.hasDeparture;
+//     }
+//   });
+  Logger.log("Row created");
 
  }
   /**
@@ -404,7 +415,7 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightArrivalTime: " + Utilities.formatDate(this.flightArrivalDate, "PST", "hh:mm a"));
     Logger.log("flightArrivalNum: " + this.flightArrivalNum);
     Logger.log("flightArrivalNotes: " + this.flightArrivalNotes);
-    Logger.log("needsPickUp: " + this.needsPickUp);
+    //Logger.log("needsPickUp: " + this.needsPickUp);
     Logger.log("flightArrivalisShiftEntered: " + this.flightArrivalisShiftEntered);
     Logger.log("flightArrivalDriver: " + this.flightArrivalDriver);
     Logger.log("flightArrivalPhone: " + this.flightArrivalPhone);
@@ -416,7 +427,7 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightDepartTime: " + this.flightDepartTime);
     Logger.log("flightDepartNum: " + this.flightDepartNum);
     Logger.log("flightDepartNotes: " + this.flightDepartNotes);
-    Logger.log("needsDropOff: " + this.needsDropOff);
+    //Logger.log("needsDropOff: " + this.needsDropOff);
     Logger.log("flightDepartIsShiftEntered: " + this.flightDepartIsShiftEntered);
     Logger.log("flightDepartDriver: " + this.flightDepartDriver);
     Logger.log("flightDepartPhone: " + this.flightDepartPhone);
@@ -427,6 +438,13 @@ PerformerRow.prototype.toLog = function () {
   Logger.log("housingEmail: " + this.housingEmail);
 };
 
+var testRowArray = (3,"Alan Plotkin",1,"Alan","Plotkin","512-632-9468","AL@i3eventmarketing.com","Fly","Festival buys","1/19/2019","Done","$264.00","MFest Paid","Needs","Needs","Needs","","1","","","","","","","","Austin, TX (change planes in Sacramento, CA)","SEA","3/13/2019","7:05 PM","SW#0445","","Needs","","He said Uncle Bucky always picks him up","","","AUS","SEA","4/8/2019","12:25 PM","SW#2222","","Needs","","","","","","","","","","","Always stays with Kirby and Adrian he said","","");
 
 
+function TestRowCreation()
+{
+  var row = new PerformerRow();
+  row.fromArray(testRowArray);
+  row.toLog()
 
+}

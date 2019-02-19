@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /*global SpreadsheetApp: false */
 /*global PropertiesService: false */
 /*global Logger: false*/
@@ -38,7 +39,7 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
       row = new this.Row();
       var firstRow = this.sheet.getRange(1, 1, 1, row.numColumns);
       header = new Array();
-      header.push(row.getHeaderArray())
+      header.push(row.getHeaderArray());
       firstRow.setValues(header);
     }
   }
@@ -50,12 +51,12 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
 
 SheetBase.prototype.rowIsValid = function(rowBase){
   return false;
-}
+};
 
 SheetBase.prototype.refreshRows = function (useMapped) {
   var sheetDataRange = this.sheet.getDataRange();
   var numSheetRows = sheetDataRange.getLastRow() + 1 - this.startingRow;
-  var numColumns = sheetDataRange.getLastColumn()
+  var numColumns = sheetDataRange.getLastColumn();
   var fullRange = this.sheet.getRange(this.startingRow, 1, numSheetRows, numColumns);
   var rawArrays = fullRange.getValues();
   this.rows = new Array();
@@ -191,7 +192,7 @@ function PerformerSheet()
 
 PerformerSheet.prototype.rowIsValid = function(rowBase){
   return rowBase.numberInAct && rowBase.numberInAct !== "";
-}
+};
 
 
 PerformerSheet.prototype.findPerformerByName = function(name) {
@@ -241,30 +242,30 @@ ShiftSheet.prototype.createShift = function(performerRow, isArrival){
       ++rowNum;
     var shiftRow = new SimpleShiftRow(this.getShiftRowRange(this.getNumRows() + 1));
     shiftRow.fromPerformerRow(performerRow, isArrival);
+  };
+
+/* create a new shift row if needed for the given preformer
+  * return: true if row was added else false
+  */
+ ShiftSheet.prototype.processRow = function(performerRow){
+  if(   performerRow.flightArrivalNum != null
+      && !performerRow.flightArrivalisShiftEntered
+      && performerRow.flightArrivalNum !== ""
+      && performerRow.needsPickUp()){
+      this.createShift(performerRow, true);
+      performerRow.flightArrivalisShiftEntered = true;
   }
 
-  /* create a new shift row if needed for the given preformer
-   * return: true if row was added else false
-   */
-  this.processRow = function(performerRow){
-      if(   performerRow.flightArrivalNum != null
-         && !(performerRow.flightArrivalisShiftEntered)
-         && performerRow.flightArrivalNum !== ""
-         && performerRow.needsPickUp()){
-          this.createShift(performerRow, true);
-          performerRow.flightArrivalisShiftEntered = true;
-      }
-
-      if(   performerRow.flightDepartNum !== null
-         && !(performerRow.flightDepartIsShiftEntered)
-         && performerRow.flightDepartNum !== ""
-         && performerRow.needsDropOff()){
-            this.createShift(performerRow, false);
-            performerRow.flightDepartIsShiftEntered = true;
-      }
-      Logger.log("Updating");
-      performerRow.toLog();
-    }
+  if(   performerRow.flightDepartNum !== null
+      && !performerRow.flightDepartIsShiftEntered
+      && performerRow.flightDepartNum !== ""
+      && performerRow.needsDropOff()){
+        this.createShift(performerRow, false);
+        performerRow.flightDepartIsShiftEntered = true;
+  }
+  Logger.log("Updating");
+  performerRow.toLog();
+};
 
 
 

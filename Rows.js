@@ -328,7 +328,7 @@ PerformerRow.prototype.needsPickUp = function() {
   if(null != needPickup && null != needRides){
     needPickup = needPickup.trim().toUpperCase();
     needRides = needRides.trim().toUpperCase();
-    ret = needPickup === "NEEDS" || ride === "NEEDS";
+    ret = needPickup === "NEEDS" || needRides === "NEEDS";
   }
   return ret;
 };

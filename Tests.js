@@ -45,14 +45,14 @@ function testPerformerRow() {
 function testUpdateRow() {
   var errorMessage = null;
   var performerSheet = new PerformerSheet();
-  var performerRow = performerSheet.getPerformerRow(1);
+  var performerRow = performerSheet.rows[6];
   if (null === performerRow) {
     errorMessage = 'Transport Row Test:no data in row 1';
   }
-  if (null === errorMessage && !performerRow.hasHousingAddress()) {
+  if (null === errorMessage && !performerRow.hasHousingAddress) {
     errorMessage = Utilities.formatString("Transport Row Test: There is currently no housing available for %s\n%s", performerRow.actName, performerRow.toString());
   }
-  if (null === errorMessage && !performerRow.isValidForArrival()) {
+  if (null === errorMessage && !performerRow.isValidForArrival) {
     errorMessage = Utilities.formatString('Transport Row Test:: There is currently no arrival data for %s', performerRow.toString());
   }
   if (null === errorMessage && !performerRow.isValidForDeparture) {
@@ -73,12 +73,12 @@ function testUpdateRow() {
 function testMergeSubject() {
   var errorMessage = null;
   var performerSheet = new PerformerSheet();
-  var performerRow = performerSheet.getPerformerRow(1);
+  var performerRow = performerSheet.rows[6];
   if (null === performerRow) {
     errorMessage = 'Transport Row Test:no data in row 1';
   }
   if (null === errorMessage) {
-    Logger.log(performerRow.mergeSubject());
+    Logger.log(performerRow.mergeSubject("<SubjectDirection> <FirstName> <LastName> of <ActName>", true));
   }
 }
 
@@ -86,8 +86,8 @@ function testNeedPickupAndDropoff() {
   var performerSheet = new PerformerSheet();
 
   var t = 0;
-  while (t < performerSheet.rowCount) {
-    var performerRow = new PerformerRow(performerSheet.getRowRange(t));
+  while (t < performerSheet.rows.length) {
+    var performerRow = performerSheet.rows[t];
 
     Logger.log("Act: %s Performer: %s %s ", performerRow.actName, performerRow.firstName, performerRow.lastName);
     if (performerRow.needsPickUp()) {

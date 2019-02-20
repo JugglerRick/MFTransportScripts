@@ -30,7 +30,7 @@ ColumnItem.prototype.isStringFormat = function () {
 //  derived classes should provide all these properties
 RowBase.prototype.constructor = RowBase;
 RowBase.prototype.columnItems = null;
-RowBase.prototype.sheetRange = 0;
+RowBase.prototype.sheetIndex = -1;
 RowBase.prototype.numColumns = function(){return this.columnItems.length;};
 
 /*
@@ -40,7 +40,7 @@ RowBase.prototype.numColumns = function(){return this.columnItems.length;};
  * columnItems - an array of ColumnItem objects
  *
  */
-function RowBase(sheetRange) {
+function RowBase(sheetIndex) {
   if (null !== this.columnItems && this.columnItems.length > 0) {
     this.columnValues = new Array(this.columnItems.length);
     this.formatStrings = new Array();
@@ -52,7 +52,7 @@ function RowBase(sheetRange) {
             //this.formatStrings.push(this.columnItems[i].format);
     }
     this.formatStrings.push(rowFormatStr);
-    this.sheetRange = sheetRange;
+    this.sheetIndex = sheetIndex;
   }
 }
 /**
@@ -509,6 +509,5 @@ ShiftRow.prototype.fromPerformerRow = function(performerRow, isArrival){
   this.assigned = "";
   this.subject = performerRow.mergeSubject("<SubjectDirection> <FirstName> <LastName> (of <ActName>)", isArrival);
   this.details = this.subject + " at SeaTac Airport and deliver them to their arranged housing. Details will be sent once you have taken the shift and they are available.";
-}
-
+};
 

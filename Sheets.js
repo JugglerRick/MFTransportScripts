@@ -36,7 +36,7 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
     if(null === this.sheet){
       this.sheet = spreadSheet.insertSheet(sheetName);
       this.sheet.insertRows(1);
-      row = new this.Row();
+      row = new this.Row(0);
       var firstRow = this.sheet.getRange(1, 1, 1, row.numColumns);
       header = new Array();
       header.push(row.getHeaderArray());
@@ -53,15 +53,20 @@ SheetBase.prototype.rowIsValid = function(rowBase){
   return false;
 };
 
-SheetBase.prototype.refreshRows = function (useMapped) {
+SheetBase.prototype.getFullRange = function() {
   var sheetDataRange = this.sheet.getDataRange();
   var numSheetRows = sheetDataRange.getLastRow() + 1 - this.startingRow;
   var numColumns = sheetDataRange.getLastColumn();
   var fullRange = this.sheet.getRange(this.startingRow, 1, numSheetRows, numColumns);
+  return fullRange;
+};
+
+SheetBase.prototype.refreshRows = function () {
+  var fullRange = this.getFullRange();
   var rawArrays = fullRange.getValues();
   this.rows = new Array();
   for(var i = 0; i < rawArrays.length; ++i){
-    var row = new this.Row();
+    var row = new this.Row(i);
     if(this.useMapped){
       row.fromMappedArray(rawArrays[i]);
     }
@@ -72,6 +77,21 @@ SheetBase.prototype.refreshRows = function (useMapped) {
       this.rows.push(row);
     }
   }
+};
+
+
+SheetBase.prototype.updateSheet = function() {
+  var fullRange = this.getFullRange();
+  var rawArrays = fullRange.getValues();
+  for(var i = 0; i < this.rows.length; ++i){
+    if(this.useMapped){
+      this.rows[i].toMappedArray(rawArrays[this.rows[i].sheetIndex]);
+    }
+    else{
+      this.rows[i].fromArray(rawArrays[this.rows[i].sheetIndex]);
+    }
+  }
+  fullRange.setValues(rawArrays);
 };
 
 /**
@@ -249,24 +269,37 @@ ShiftSheet.prototype.createShift = function(performerRow, isArrival){
   */
  ShiftSheet.prototype.processRow = function(performerRow){
   if(   performerRow.flightArrivalNum != null
-      && !performerRow.flightArrivalisShiftEntered
-      && performerRow.flightArrivalNum !== ""
-      && performerRow.needsPickUp()){
-      this.createShift(performerRow, true);
-      performerRow.flightArrivalisShiftEntered = true;
+    && !performerRow.flightArrivalisShiftEntered
+    && performerRow.flightArrivalNum !== ""
+    && performerRow.needsPickUp())
+  {
+    this.createShift(performerRow, true);
+    performerRow.flightArrivalisShiftEntered = true;
   }
 
   if(   performerRow.flightDepartNum !== null
-      && !performerRow.flightDepartIsShiftEntered
-      && performerRow.flightDepartNum !== ""
-      && performerRow.needsDropOff()){
-        this.createShift(performerRow, false);
-        performerRow.flightDepartIsShiftEntered = true;
+    && !performerRow.flightDepartIsShiftEntered
+    && performerRow.flightDepartNum !== ""
+    && performerRow.needsDropOff())
+  {
+    this.createShift(performerRow, false);
+    performerRow.flightDepartIsShiftEntered = true;
   }
   Logger.log("Updating");
   performerRow.toLog();
 };
 
 
+function testShiftSheet(){
+
+  var shiftSheet = new ShiftSheet()
+  var performerSheet = new PerformerSheet();
+
+  for(var row in performerSheet.rows) {
+    shiftSheet.ProcessRow(row);
+  }
+
+  shiftSheet.updateSheet();
+}
 
 

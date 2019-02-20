@@ -30,17 +30,17 @@ ColumnItem.prototype.isStringFormat = function () {
 //  derived classes should provide all these properties
 RowBase.prototype.constructor = RowBase;
 RowBase.prototype.columnItems = null;
-RowBase.prototype.sheetIndex = 0;
+RowBase.prototype.sheetRange = 0;
 RowBase.prototype.numColumns = function(){return this.columnItems.length;};
 
-/**
+/*
  * RowBase object constructor
  * The prototype of the derived object calling this must contain the following
  * properties;
  * columnItems - an array of ColumnItem objects
  *
  */
-function RowBase() {
+function RowBase(sheetRange) {
   if (null !== this.columnItems && this.columnItems.length > 0) {
     this.columnValues = new Array(this.columnItems.length);
     this.formatStrings = new Array();
@@ -52,6 +52,7 @@ function RowBase() {
             //this.formatStrings.push(this.columnItems[i].format);
     }
     this.formatStrings.push(rowFormatStr);
+    this.sheetRange = sheetRange;
   }
 }
 /**
@@ -66,6 +67,7 @@ RowBase.prototype.getHeaderArray = function () {
   });
   return retArray;
 };
+
 
 /**
  * Find the first column item for this row that does not equal the given row

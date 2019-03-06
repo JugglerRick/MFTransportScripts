@@ -17,9 +17,8 @@ SheetBase.prototype.Row = null;
 SheetBase.prototype.startingRow = 1;
 SheetBase.prototype.rows = null;
 
-function SheetBase(spreadSheetProperty, sheetName, useMapped){
+function SheetBase(spreadSheetProperty, sheetName){
   if(null != spreadSheetProperty && null != sheetName){
-    this.useMapped = useMapped;
     this.loadSheet(spreadSheetProperty, sheetName);
     this.refreshRows();
   }
@@ -67,12 +66,7 @@ SheetBase.prototype.refreshRows = function () {
   this.rows = new Array();
   for(var i = 0; i < rawArrays.length; ++i){
     var row = new this.Row(i);
-    if(this.useMapped){
-      row.fromMappedArray(rawArrays[i]);
-    }
-    else{
-      row.fromArray(rawArrays[i]);
-    }
+    row.fromSheetArray(rawArrays[i]);
     if(this.rowIsValid(row)){
       this.rows.push(row);
     }
@@ -84,12 +78,7 @@ SheetBase.prototype.updateSheet = function() {
   var fullRange = this.getFullRange();
   var rawArrays = fullRange.getValues();
   for(var i = 0; i < this.rows.length; ++i){
-    if(this.useMapped){
-      this.rows[i].toMappedArray(rawArrays[this.rows[i].sheetIndex]);
-    }
-    else{
-      this.rows[i].fromArray(rawArrays[this.rows[i].sheetIndex]);
-    }
+    this.rows[i].toSheetArray(rawArrays[this.rows[i].sheetIndex]);
   }
   fullRange.setValues(rawArrays);
 };
@@ -187,17 +176,22 @@ SheetBase.prototype.addRow = function(row){
 };
 
 
-SheetBase.prototype.updateRow = function(newRow) {
-  var row = this.findRow(newRow);
-  if(null !== row){
-      row.update(newRow);
-      var range = this.getRowRange(row.index);
-      row.updateRange(range);
-  }
-  else {
-      this.addRow(newRow);
-  }
-};
+// SheetBase.prototype.updateRow = function(newRow) {
+//   var rowIndex = newRow.sheetIndex;
+//   if(rowIndex == -1){
+//     rowIndex =
+//   }
+//   var row = this.rows[rowIndex];
+//   var row = this.findRow(newRow);
+//   if(null !== row){
+//       row.update(newRow);
+//       var range = this.getRowRange(row.index);
+//       row.updateRange(range);
+//   }
+//   else {
+//       this.addRow(newRow);
+//   }
+// };
 
 //------------------------------ PerformerSheet -------------------------------------
 

@@ -52,7 +52,9 @@ function RowBase(sheetIndex) {
             //this.formatStrings.push(this.columnItems[i].format);
     }
     this.formatStrings.push(rowFormatStr);
-    this.sheetIndex = sheetIndex;
+    if(sheetIndex){
+      this.sheetIndex = sheetIndex;
+    }
   }
 }
 /**
@@ -116,29 +118,8 @@ RowBase.prototype.matchesTemplateRow = function (templateRow) {
  */
 RowBase.prototype.copy = function(row){this.fromArray(row.columnValues);};
 
-/**
- * Set the array of column values to the values given in the Arra
- * @param {Array}sourceArray - the array to set the column values from
- */
-RowBase.prototype.fromArray = function (sourceArray) {
-  for (var i = 0; i < this.columnItems.length; ++i) {
-    var sourceIndex = i
-    var item = sourceArray[i];
-    if ( "@" === this.formatStrings[i]) {
-      item = String(item).trim();
-    }
-    this.columnValues[i] = item;
-  }
-};
 
-RowBase.prototype.toArray = function (destinationArray) {
-  for (var i = 0; i < this.columnItems.length; ++i) {
-    destinationArray[i] = this.columnValues[i];
-  }
-};
-
-
-RowBase.prototype.fromMappedArray = function (sourceArray) {
+RowBase.prototype.fromSheetArray = function (sourceArray) {
   for (var i = 0; i < this.columnItems.length; ++i) {
     var item = sourceArray[this.columnItems[i].mapIndex];
     if ("@" === this.formatStrings[i]) {
@@ -149,7 +130,7 @@ RowBase.prototype.fromMappedArray = function (sourceArray) {
   var array = this.columnValues;
 };
 
-RowBase.prototype.toMappedArray = function (destinationArray) {
+RowBase.prototype.toSheetArray = function (destinationArray) {
   for (var i = 0; i < this.columnItems.length; ++i) {
     destinationArray[this.columnItems[i].mapIndex] = this.columnValues[i];
   }
@@ -198,8 +179,8 @@ PerformerRow.prototype.columnItems = [
   { name: "HOUSING_EMAIL"         , header: "" , mapIndex:   52, format: "@"}
 ];
 
-function PerformerRow(){
-  RowBase.call(this);
+function PerformerRow(sheetIndex){
+  RowBase.call(this, sheetIndex);
   Object.defineProperty(this, 'actName'             ,{get: function(){return this.columnValues[this.ACT_NAME        ];}, set: function(value){this.columnValues[this.ACT_NAME        ] = value;}, enumerable: true});
   Object.defineProperty(this, 'firstName'           ,{get: function(){return this.columnValues[this.FIRST_NAME      ];}, set: function(value){this.columnValues[this.FIRST_NAME      ] = value;}, enumerable: true});
   Object.defineProperty(this, 'lastName'            ,{get: function(){return this.columnValues[this.LAST_NAME       ];}, set: function(value){this.columnValues[this.LAST_NAME       ] = value;}, enumerable: true});
@@ -461,7 +442,7 @@ function TestPerformerRowCreation()
 {
   var testRowArray = [3,"Alan Plotkin",1,"Alan","Plotkin","512-632-9468","AL@i3eventmarketing.com","Fly","Festival buys","1/19/2019","Done","$264.00","MFest Paid","Needs","Needs","Needs","","1","","","","","","","","Austin, TX (change planes in Sacramento, CA)","SEA","3/13/2019","7:05 PM","SW#0445","","Needs","","He said Uncle Bucky always picks him up","","","AUS","SEA","4/8/2019","12:25 PM","SW#2222","","Needs","","","","","","","","","100 Fremont.ave","","Always stays with Kirby and Adrian he said","",""];
   var row = new PerformerRow();
-  row.fromMappedArray(testRowArray);
+  row.fromSheetArray(testRowArray);
   row.toLog();
 
 }
@@ -480,8 +461,8 @@ ShiftRow.prototype.columnItems = [
   { name: "DETAIL"     , header: "Detail"    , mapIndex:    8, format: "@"}
 ];
 
-function ShiftRow(){
-  RowBase.call(this);
+function ShiftRow(sheetIndex){
+  RowBase.call(this, sheetIndex);
   Object.defineProperty(this, 'shiftDate' ,{get: function(){return this.columnValues[this.SHIFT_DATE];}, set: function(value){this.columnValues[this.SHIFT_DATE] = value;}, enumerable: true});
   Object.defineProperty(this, 'startTime' ,{get: function(){return this.columnValues[this.START_TIME];}, set: function(value){this.columnValues[this.START_TIME] = value;}, enumerable: true});
   Object.defineProperty(this, 'endTime'   ,{get: function(){return this.columnValues[this.END_TIME  ];}, set: function(value){this.columnValues[this.END_TIME  ] = value;}, enumerable: true});
@@ -511,3 +492,45 @@ ShiftRow.prototype.fromPerformerRow = function(performerRow, isArrival){
   this.details = this.subject + " at SeaTac Airport and deliver them to their arranged housing. Details will be sent once you have taken the shift and they are available.";
 };
 
+//------------------------- Drvier Row ------------------------------------------------------------------------------------------------
+DriverRow.prototype = new RowBase();
+DriverRow.prototype.constructor = DriverRow;
+DriverRow.prototype.columnItems = [
+  { name: "ID"            , header: "Shiftboard ID"     , mapIndex:    0, format: "#"},
+  { name: "FIRST_NAME"    , header: "First Name"        , mapIndex:    1, format: "@"},
+  { name: "LAST_NAME"     , header: "Last Name"         , mapIndex:    2, format: "@"},
+  { name: "SCREEN_NAME"   , header: "Screen Name"       , mapIndex:    3, format: "@"},
+  { name: "EMAIL"         , header: "Email"             , mapIndex:    4, format: "@"},
+  { name: "MEMBER_LEVEL"  , header: "Membership Level"  , mapIndex:    5, format: "@"},
+  { name: "SCORE"         , header: "Score"             , mapIndex:    6, format: "@"},
+  { name: "HOME_PHONE"    , header: "Home Phone"        , mapIndex:    7, format: "@"},
+  { name: "MOBILE_PHONE"  , header: "Mobile Phone"      , mapIndex:    8, format: "@"},
+  { name: "WORK_PHONE"    , header: "Work Phone"        , mapIndex:    9, format: "@"},
+  { name: "TITLE"         , header: "Title"             , mapIndex:   10, format: "@"},
+  { name: "ADDRESS"       , header: "Address"           , mapIndex:   11, format: "@"},
+  { name: "CITY"          , header: "City"              , mapIndex:   12, format: "@"},
+  { name: "STATE"         , header: "State/Province"    , mapIndex:   13, format: "@"},
+  { name: "ZIP_CODE"      , header: "Zip/Postal Code"   , mapIndex:   14, format: "@"},
+  { name: "COUNTRY"       , header: "Country"           , mapIndex:   15, format: "@"},
+  { name: "PAGER"         , header: "Pager"             , mapIndex:   16, format: "@"},
+  { name: "FAX"           , header: "Fax"               , mapIndex:   17, format: "@"},
+  { name: "WEB_PAGE"      , header: "WebPage"           , mapIndex:   18, format: "@"},
+  { name: "TIMEZONE"      , header: "Timezone"          , mapIndex:   19, format: "@"},
+  { name: "UPDATED"       , header: "Last Updated"      , mapIndex:   20, format: "mm-dd-yyyy"},
+  { name: "VIEW"          , header: "View"              , mapIndex:   21, format: "@"}
+];
+
+function DriverRow(sheetIndex){
+  RowBase.call(this, sheetIndex);
+  Object.defineProperty(this, 'firstName'   ,{get: function(){return this.columnValues[this.FIRST_NAME  ];}, set: function(value){this.columnValues[this.FIRST_NAME  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'lastName'    ,{get: function(){return this.columnValues[this.LAST_NAME   ];}, set: function(value){this.columnValues[this.LAST_NAME   ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'screenName'  ,{get: function(){return this.columnValues[this.SCREEN_NAME ];}, set: function(value){this.columnValues[this.SCREEN_NAME ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'email'       ,{get: function(){return this.columnValues[this.EMAIL       ];}, set: function(value){this.columnValues[this.EMAIL       ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'homePhone'   ,{get: function(){return this.columnValues[this.HOME_PHONE  ];}, set: function(value){this.columnValues[this.HOME_PHONE  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'mobilePhone' ,{get: function(){return this.columnValues[this.MOBILE_PHONE];}, set: function(value){this.columnValues[this.MOBILE_PHONE] = value;}, enumerable: true});
+  Object.defineProperty(this, 'workPhone'   ,{get: function(){return this.columnValues[this.WORK_PHONE  ];}, set: function(value){this.columnValues[this.WORK_PHONE  ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'address'     ,{get: function(){return this.columnValues[this.ADDRESS     ];}, set: function(value){this.columnValues[this.ADDRESS     ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'city'        ,{get: function(){return this.columnValues[this.CITY        ];}, set: function(value){this.columnValues[this.CITY        ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'state'       ,{get: function(){return this.columnValues[this.STATE       ];}, set: function(value){this.columnValues[this.STATE       ] = value;}, enumerable: true});
+  Object.defineProperty(this, 'zipCode'     ,{get: function(){return this.columnValues[this.ZIP_CODE    ];}, set: function(value){this.columnValues[this.ZIP_CODE   ] = value;}, enumerable: true});
+}

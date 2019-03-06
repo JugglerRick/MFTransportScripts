@@ -61,7 +61,7 @@ function testUpdateRow() {
   if (null === errorMessage) {
     performerRow.flightArrivalDriver = "NO BODY";
     performerRow.flightDepartDriver = "NO BODY";
-    performerRow.updateRow();
+    performerSheet.updateSheet();
 
     Logger.log("Test Passed");
   }

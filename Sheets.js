@@ -240,6 +240,7 @@ function testFindPerformer(){
   }
 }
 
+//---------------------- Shift Sheet ---------------------------------
 
 ShiftSheet.prototype = new SheetBase();
 ShiftSheet.prototype.constructor = ShiftSheet;
@@ -296,4 +297,13 @@ function testShiftSheet(){
   shiftSheet.updateSheet();
 }
 
+//---------------------- Driver Sheet ---------------------------------
 
+DriverSheet.prototype = new SheetBase();
+DriverSheet.prototype.constructor = DriverSheet;
+DriverSheet.prototype.Row = DriverRow;
+
+function DriverSheet()
+{
+  SheetBase.call(this,"DRIVER_SHEET_ID", "Sheet1");
+}

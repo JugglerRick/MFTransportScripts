@@ -136,6 +136,12 @@ RowBase.prototype.toSheetArray = function (destinationArray) {
   }
 };
 
+RowBase.prototype.toLog = function() {
+  for(var i = 0; i < this.columnItems.length; ++i){
+    Logger.log( this.columnItems[i].name + " = " + this.columnValues[i]);
+  }
+};
+
 
 //---------------------- PerformerRow -----------------------------------------
 
@@ -534,3 +540,5 @@ function DriverRow(sheetIndex){
   Object.defineProperty(this, 'state'       ,{get: function(){return this.columnValues[this.STATE       ];}, set: function(value){this.columnValues[this.STATE       ] = value;}, enumerable: true});
   Object.defineProperty(this, 'zipCode'     ,{get: function(){return this.columnValues[this.ZIP_CODE    ];}, set: function(value){this.columnValues[this.ZIP_CODE   ] = value;}, enumerable: true});
 }
+
+

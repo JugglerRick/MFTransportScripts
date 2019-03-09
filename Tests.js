@@ -108,4 +108,8 @@ function testNeedPickupAndDropoff() {
   }
 }
 
+function testDriverSheet(){
+  var driverSheet = new DriverSheet();
+  driverSheet.rows[1].toLog();
 
+}

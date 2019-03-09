@@ -49,7 +49,7 @@ SheetBase.prototype.loadSheet = function(spreadSheetProperty, sheetName){
 };
 
 SheetBase.prototype.rowIsValid = function(rowBase){
-  return false;
+  return true;
 };
 
 SheetBase.prototype.getFullRange = function() {

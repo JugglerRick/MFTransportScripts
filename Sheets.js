@@ -226,6 +226,30 @@ PerformerSheet.prototype.findPerformerByName = function(name) {
   return performer;
 };
 
+PerformerSheet.prototype.getPerformerList = function() {
+  var performers = [];
+  for(var i = 0; i < this.rows.length; ++i){
+    if(this.rows[i].firstName != "" && this.rows[i].lastName != ""){
+      performers.push(this.rows[i].firstName + ' ' + this.rows[i].lastName);
+    }
+  }
+  return performers;
+};
+
+/*
+ * Get a list of the Acts
+ */
+PerformerSheet.prototype.getActList = function(){
+  var list = [];
+  for(var i = 0; i < this.rows.length; ++i){
+    if(this.rows[i].actName != "" && !ArrayContains(list, this.rows[i].actName)){
+        list.push(this.rows[i].actName);
+    }
+  }
+  return list.sort();
+};
+
+
 
 function testFindPerformer(){
   var performerName = 'Alan Plotkin';
@@ -287,7 +311,7 @@ ShiftSheet.prototype.createShift = function(performerRow, isArrival){
 
 function testShiftSheet(){
 
-  var shiftSheet = new ShiftSheet()
+  var shiftSheet = new ShiftSheet();
   var performerSheet = new PerformerSheet();
 
   for(var row in performerSheet.rows) {
@@ -307,3 +331,10 @@ function DriverSheet()
 {
   SheetBase.call(this,"DRIVER_SHEET_ID", "Sheet1");
 }
+
+DriverSheet.prototype.getDriverList = function () {
+  var drivers = [];
+  for(var i = 0; i < this.rows.length; ++i){
+    drivers.push(this.rows[i].screenName);
+  }
+};

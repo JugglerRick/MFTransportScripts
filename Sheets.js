@@ -164,34 +164,41 @@ SheetBase.prototype.logRow = function(rowName, row){
   Logger.log("};");
 };
 
+SheetBase.prototype.newSheetRowArray = function(row){
+  var sheetDataRange = this.sheet.getDataRange();
+  var numColumns = sheetDataRange.getLastColumn();
+  var newSheetRowArray = new Array(numColumns);
+  row.toSheetArray(newSheetRowArray);
+  return newSheetRowArray;
+}
+
 SheetBase.prototype.addRow = function(row){
   if(null === this.sheet){
       throw {'name': 'Error',
       'message': 'SheetBase.addRow: There is currenly no sheet available'};
 
   }
-  this.sheet.appendRow(row.columnValues);
+  var newSheetArray = this.newSheetRowArray(row);
+  this.sheet.appendRow(newSheetArray);
   var range = sheet.getRange(sheet.getLastRow(), 1, 1, row.columnItems.length);
-  range.setNumberFormats(this.formatStrings);
+  row.formatStringsToSheetArray(newSheetArray);
+  range.setNumberFormats(newSheetArray);
+  this.refreshRows();
 };
 
 
-// SheetBase.prototype.updateRow = function(newRow) {
-//   var rowIndex = newRow.sheetIndex;
-//   if(rowIndex == -1){
-//     rowIndex =
-//   }
-//   var row = this.rows[rowIndex];
-//   var row = this.findRow(newRow);
-//   if(null !== row){
-//       row.update(newRow);
-//       var range = this.getRowRange(row.index);
-//       row.updateRange(range);
-//   }
-//   else {
-//       this.addRow(newRow);
-//   }
-// };
+SheetBase.prototype.updateRow = function(updatedRow) {
+  if(updatedRow.sheetIndex == -1){
+    this.addRow(updatedRow);
+  }
+  else{
+    var sheetRowArray = this.newSheetRowArray(updatedRow);
+    var rowsArray = [];
+    rowsArray.push(sheetRowArray);
+    var range = this.getRowRange(updatedRow.sheetIndex);
+    range.setValues(rowsArray);
+  }
+};
 
 //------------------------------ PerformerSheet -------------------------------------
 
@@ -209,19 +216,19 @@ PerformerSheet.prototype.rowIsValid = function(rowBase){
 };
 
 
-PerformerSheet.prototype.findPerformerByName = function(name) {
+PerformerSheet.prototype.findByName = function(name) {
   var performer = null;
-  var NameRow = new PerformerRow();
+  var nameRow = new PerformerRow();
   var nameParts = name.split(" ");
-  NameRow.firstName = nameParts[0];
-  NameRow.lastName = nameParts[1];
+  nameRow.firstName = nameParts[0];
+  nameRow.lastName = nameParts[1];
   for(var i = 0; i < this.rows.length && null === performer; ++i){
-    if(this.rows[i].matchesTemplateRow(NameRow)) {
+    if(this.rows[i].matchesTemplateRow(nameRow)) {
       performer = this.rows[i];
     }
   }
   if(null === performer) {
-    Logger.log("findPerformer was unable to locate " + name);
+    Logger.log("PerformerSheet.findByName was unable to locate " + name);
   }
   return performer;
 };
@@ -255,7 +262,7 @@ function testFindPerformer(){
   var performerName = 'Alan Plotkin';
 
   var performerSheet = new PerformerSheet();
-  var performer = performerSheet.findPerformerByName(performerName);
+  var performer = performerSheet.findByName(performerName);
   if(null !== performer){
     performer.toLog();
   }
@@ -332,9 +339,25 @@ function DriverSheet()
   SheetBase.call(this,"DRIVER_SHEET_ID", "Sheet1");
 }
 
+DriverSheet.prototype.findByName = function(name) {
+  var driverRow = null;
+  var nameRow = new DriverRow();
+  nameRow.screenName = name;
+  for(var i = 0; i < this.rows.length && null === driverRow; ++i){
+    if(this.rows[i].matchesTemplateRow(nameRow)) {
+      driverRow = this.rows[i];
+    }
+  }
+  if(null === driverRow) {
+    Logger.log("DriverSheet.findByName was unable to locate " + name);
+  }
+  return driverRow;
+};
+
 DriverSheet.prototype.getDriverList = function () {
   var drivers = [];
   for(var i = 0; i < this.rows.length; ++i){
     drivers.push(this.rows[i].screenName);
   }
+  return drivers;
 };

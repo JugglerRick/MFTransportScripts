@@ -14,10 +14,12 @@ function updateFormLists(){
   // identify the sheet where the data resides needed to populate the drop-down
   var performerSheet = new PerformerSheet();
   var names = performerSheet.getPerformerList();
+  names.sort();
   // populate the drop-down with the array data
   performerDropDown.setChoiceValues(names);
-  var driverSheet = new DriversSheet();
+  var driverSheet = new DriverSheet();
   names = driverSheet.getDriverList();
+  names.sort();
   driverDropDown.setChoiceValues(names);
 }
 

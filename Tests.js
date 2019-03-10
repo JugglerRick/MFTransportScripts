@@ -19,7 +19,7 @@ function testStartsWith(){
 function testPerformerRow() {
   var errorMessage = null;
   var performerSheet = new PerformerSheet();
-  var performerRow = performerSheet.findPerformerByName("Al Simmons");
+  var performerRow = performerSheet.findByName("Al Simmons");
   if (null === performerRow) {
     errorMessage = 'Transport Row Test:no data in row 1';
   }

@@ -112,12 +112,11 @@ RowBase.prototype.matchesTemplateRow = function (templateRow) {
   return match;
 };
 
-/**
- * Update this RowBase with the columns from the given RowBase
- * @param {RowBase} row - the row to update from
- */
-RowBase.prototype.copy = function(row){this.fromArray(row.columnValues);};
-
+RowBase.prototype.formatStringToSheetArray = function (destinationArray){
+  for (var i = 0; i < this.columnItems.length; ++i) {
+    destinationArray[this.columnItems[i].mapIndex] = this.formatStrings[i];
+  }
+};
 
 RowBase.prototype.fromSheetArray = function (sourceArray) {
   for (var i = 0; i < this.columnItems.length; ++i) {
@@ -539,6 +538,22 @@ function DriverRow(sheetIndex){
   Object.defineProperty(this, 'city'        ,{get: function(){return this.columnValues[this.CITY        ];}, set: function(value){this.columnValues[this.CITY        ] = value;}, enumerable: true});
   Object.defineProperty(this, 'state'       ,{get: function(){return this.columnValues[this.STATE       ];}, set: function(value){this.columnValues[this.STATE       ] = value;}, enumerable: true});
   Object.defineProperty(this, 'zipCode'     ,{get: function(){return this.columnValues[this.ZIP_CODE    ];}, set: function(value){this.columnValues[this.ZIP_CODE   ] = value;}, enumerable: true});
+
+  Object.defineProperty(this, 'phone', {enumerable: true,
+    get: function(){
+      var phone = this.columnValues[this.MOBILE_PHONE];
+      if(null === phone || "" === phone){
+        phone = this.columnValues[this.HOME_PHONE];
+      }
+      if(null === phone || "" === phone){
+        phone = this.columnValues[this.WORK_PHONE];
+      }
+      return phone;
+    }
+  });
+
 }
+
+
 
 

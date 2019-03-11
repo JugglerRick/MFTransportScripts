@@ -192,8 +192,6 @@ function PerformerRow(sheetIndex){
   Object.defineProperty(this, 'numberInAct'         ,{get: function(){return this.columnValues[this.NUMBER_IN_ACT   ];}, set: function(value){this.columnValues[this.NUMBER_IN_ACT   ] = value;}, enumerable: true});
   Object.defineProperty(this, 'mobile'              ,{get: function(){return this.columnValues[this.MOBILE          ];}, set: function(value){this.columnValues[this.MOBILE          ] = value;}, enumerable: true});
   Object.defineProperty(this, 'eMail'               ,{get: function(){return this.columnValues[this.EMAIL           ];}, set: function(value){this.columnValues[this.EMAIL           ] = value;}, enumerable: true});
-  Object.defineProperty(this, 'needsRides'          ,{get: function(){return this.columnValues[this.NEEDS_RIDES     ];}, set: function(value){this.columnValues[this.NEEDS_RIDES     ] = value;}, enumerable: true});
-  Object.defineProperty(this, 'needsShuttle'        ,{get: function(){return this.columnValues[this.NEEDS_SHUTTLE   ];}, set: function(value){this.columnValues[this.NEEDS_SHUTTLE   ] = value;}, enumerable: true});
   Object.defineProperty(this, 'travelMethod'        ,{get: function(){return this.columnValues[this.METHOD          ];}, set: function(value){this.columnValues[this.METHOD          ] = value;}, enumerable: true});
   Object.defineProperty(this, 'travelNotes'         ,{get: function(){return this.columnValues[this.TRAVEL_NOTES    ];}, set: function(value){this.columnValues[this.TRAVEL_NOTES    ] = value;}, enumerable: true});
   Object.defineProperty(this, 'comingFrom'          ,{get: function(){return this.columnValues[this.COMING_FROM     ];}, set: function(value){this.columnValues[this.COMING_FROM     ] = value;}, enumerable: true});
@@ -276,62 +274,78 @@ function PerformerRow(sheetIndex){
       return this.hasHousingAddress && this.hasDeparture;
     }
   });
- }
 
-PerformerRow.prototype.isArrivalShiftEntered = function(){
+  Object.defineProperty(this, 'needsRides',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.NEEDS_RIDES, "NEEDS");
+    },
+    set: function(value){
+      this.columnValues[this.NEEDS_RIDES] =  value ? "NEEDS" : "";
+    }
+  });
+
+  Object.defineProperty(this, 'needsShuttle',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.NEEDS_SHUTTLE, "NEEDS");
+    },
+    set: function(value){
+      this.columnValues[this.NEEDS_SHUTTLE] =  value ? "NEEDS" : "";
+    }
+  });
+
+  Object.defineProperty(this, 'needsPickup',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.NEEDS_PICKUP, "NEEDS") || this.needsRides;
+    },
+    set: function(value){
+      this.columnValues[this.NEEDS_PICKUP] =  value ? "NEEDS" : "";
+    }
+  });
+
+  Object.defineProperty(this, 'needsDropOff',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.NEEDS_DROPOFF, "NEEDS") || this.needsRides;
+    },
+    set: function(value){
+      this.columnValues[this.NEEDS_DROPOFF] =  value ? "NEEDS" : "";
+    }
+  });
+
+  Object.defineProperty(this, 'isArrivalShiftEntered',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.ARRIVAL_SHIFT_ENTERED, "YES");
+    },
+    set: function(value){
+      this.columnValues[this.ARRIVAL_SHIFT_ENTERED] =  value ? "YES" : "";
+    }
+  });
+
+  Object.defineProperty(this, 'isDepartureShiftEntered',{
+    enumerable: true,
+    get: function(){
+      return this.stringValueToBool(this.DEPART_SHIFT_ENTERED, "YES");
+    },
+    set: function(value){
+      this.columnValues[this.DEPART_SHIFT_ENTERED] =  value ? "YES" : "";
+    }
+  });
+
+}
+
+
+PerformerRow.prototype.stringValueToBool = function(valueIndex, str){
   var ret = false;
-  var shiftEntered = this.columnValues[this.ARRIVAL_SHIFT_ENTERED];
-  if(null != shiftEntered){
-    shiftEntered = shiftEntered.trim().toUpperCase();
-    ret = shiftEntered === "YES";
+  var value = this.columnValues[valueIndex];
+  if(null != value){
+    value = value.trim().toUpperCase();
+    ret = value === str;
   }
   return  ret;
-};
-
-PerformerRow.prototype.arrivalShiftEntered = function(isShiftEntered) {
-
-  this.columnValues[this.ARRIVAL_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
-};
-
-
-PerformerRow.prototype.isDepartureShiftEntered = function(){
-  var ret = false;
-  var shiftEntered = this.columnValues[this.DEPART_SHIFT_ENTERED];
-  if(null != shiftEntered){
-    shiftEntered = shiftEntered.trim().toUpperCase();
-    ret = shiftEntered === "YES";
-  }
-  return  ret;
-};
-
-PerformerRow.prototype.departureShiftEntered = function(isShiftEntered) {
-  this.columnValues[this.DEPART_SHIFT_ENTERED] = isShiftEntered ? "Yes" : "";
-};
-
-// needsPickUp
-PerformerRow.prototype.needsPickUp = function() {
-  var ret = false;
-  var needPickup = this.columnValues[this.NEEDS_PICKUP];
-  var needRides = this.columnValues[this.NEEDS_RIDES];
-  if(null != needPickup && null != needRides){
-    needPickup = needPickup.trim().toUpperCase();
-    needRides = needRides.trim().toUpperCase();
-    ret = needPickup === "NEEDS" || needRides === "NEEDS";
-  }
-  return ret;
-};
-
-  // needsDropOff
-PerformerRow.prototype.needsDropOff = function() {
-  var ret = false;
-  var needDropOff = this.columnValues[this.NEEDS_DROPOFF];
-  var needRides = this.columnValues[this.NEEDS_RIDES];
-  if(null != needDropOff && null != needRides){
-    needDropOff = needDropOff.trim().toUpperCase();
-    needRides = needRides.trim().toUpperCase();
-    ret = needDropOff === "NEEDS" || needRides === "NEEDS";
-  }
-  return ret;
 };
 
 
@@ -418,8 +432,8 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightArrivalTime: " + Utilities.formatDate(this.flightArrivalDate, "PST", "hh:mm a"));
     Logger.log("flightArrivalNum: " + this.flightArrivalNum);
     Logger.log("flightArrivalNotes: " + this.flightArrivalNotes);
-    Logger.log("needsPickUp: " + this.needsPickUp());
-    Logger.log("isArrivalShiftEntered: " + this.isArrivalShiftEntered());
+    Logger.log("needsPickUp: " + this.needsPickUp);
+    Logger.log("isArrivalShiftEntered: " + this.isArrivalShiftEntered);
     Logger.log("flightArrivalDriver: " + this.flightArrivalDriver);
     Logger.log("flightArrivalPhone: " + this.flightArrivalPhone);
   }
@@ -430,8 +444,8 @@ PerformerRow.prototype.toLog = function () {
     Logger.log("flightDepartTime: " + this.flightDepartTime);
     Logger.log("flightDepartNum: " + this.flightDepartNum);
     Logger.log("flightDepartNotes: " + this.flightDepartNotes);
-    Logger.log("needsDropOff: " + this.needsDropOff());
-    Logger.log("isDepartureShiftEntered: " + this.isDepartureShiftEntered());
+    Logger.log("needsDropOff: " + this.needsDropOff);
+    Logger.log("isDepartureShiftEntered: " + this.isDepartureShiftEntered);
     Logger.log("flightDepartDriver: " + this.flightDepartDriver);
     Logger.log("flightDepartPhone: " + this.flightDepartPhone);
   }

@@ -168,9 +168,12 @@ SheetBase.prototype.newSheetRowArray = function(row){
   var sheetDataRange = this.sheet.getDataRange();
   var numColumns = sheetDataRange.getLastColumn();
   var newSheetRowArray = new Array(numColumns);
+  for(var i = 0; i < numColumns; ++i){
+    newSheetRowArray[i] = "";
+  }
   row.toSheetArray(newSheetRowArray);
   return newSheetRowArray;
-}
+};
 
 SheetBase.prototype.addRow = function(row){
   if(null === this.sheet){
@@ -180,10 +183,10 @@ SheetBase.prototype.addRow = function(row){
   }
   var newSheetArray = this.newSheetRowArray(row);
   this.sheet.appendRow(newSheetArray);
-  var range = sheet.getRange(sheet.getLastRow(), 1, 1, row.columnItems.length);
-  row.formatStringsToSheetArray(newSheetArray);
-  range.setNumberFormats(newSheetArray);
-  this.refreshRows();
+  //var range = sheet.getRange(sheet.getLastRow(), 1, 1, row.columnItems.length);
+  //row.formatStringsToSheetArray(newSheetArray);
+  //range.setNumberFormats(newSheetArray);
+  //this.refreshRows();
 };
 
 
@@ -233,10 +236,13 @@ PerformerSheet.prototype.findByName = function(name) {
   return performer;
 };
 
-PerformerSheet.prototype.getPerformerList = function() {
+PerformerSheet.prototype.getPerformerList = function(filter) {
   var performers = [];
+  if( undefined === filter || null === filter){
+    filter = function(item) {return true;};
+  }
   for(var i = 0; i < this.rows.length; ++i){
-    if(this.rows[i].firstName != "" && this.rows[i].lastName != ""){
+    if(this.rows[i].firstName != "" && this.rows[i].lastName != "" && filter(this.rows[i])){
       performers.push(this.rows[i].firstName + ' ' + this.rows[i].lastName);
     }
   }
@@ -297,7 +303,7 @@ ShiftSheet.prototype.createShift = function(performerRow, isArrival){
   if(   performerRow.flightArrivalNum != null
     && !performerRow.flightArrivalisShiftEntered
     && performerRow.flightArrivalNum !== ""
-    && performerRow.needsPickUp())
+    && performerRow.needsPickUp)
   {
     this.createShift(performerRow, true);
     performerRow.flightArrivalisShiftEntered = true;
@@ -306,7 +312,7 @@ ShiftSheet.prototype.createShift = function(performerRow, isArrival){
   if(   performerRow.flightDepartNum !== null
     && !performerRow.flightDepartIsShiftEntered
     && performerRow.flightDepartNum !== ""
-    && performerRow.needsDropOff())
+    && performerRow.needsDropOff)
   {
     this.createShift(performerRow, false);
     performerRow.flightDepartIsShiftEntered = true;

@@ -90,7 +90,7 @@ function testNeedPickupAndDropoff() {
     var performerRow = performerSheet.rows[t];
 
     Logger.log("Act: %s Performer: %s %s ", performerRow.actName, performerRow.firstName, performerRow.lastName);
-    if (performerRow.needsPickUp()) {
+    if (performerRow.needsPickUp) {
       Logger.log("Needs a Pickup");
     }
     else {
